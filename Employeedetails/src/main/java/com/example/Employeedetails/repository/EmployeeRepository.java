@@ -2,7 +2,7 @@
 package com.example.Employeedetails.repository;
 
 // Importing JpaRepository for CRUD operations
-import com.example.Employeedetails.Employee;
+import com.example.Employeedetails.model.Employee;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 // Creating a Spring Data JPA repository interface for Employee entity

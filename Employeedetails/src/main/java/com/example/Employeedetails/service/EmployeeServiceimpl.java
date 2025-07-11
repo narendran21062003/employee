@@ -1,89 +1,135 @@
 package com.example.Employeedetails.service;
-import com.example.Employeedetails.exception.EmployeeNotFoundException;
 
-// Importing the entity (database table) class
-import com.example.Employeedetails.Employee;
-
-// Importing the DTO class (used to transfer data between layers securely)
 import com.example.Employeedetails.dto.EmployeeDto;
-
-// Mapper class to convert between DTO and Entity
+import com.example.Employeedetails.exception.EmployeeNotFoundException;
 import com.example.Employeedetails.mapper.EmployeeMapper;
-
-// Repository interface to interact with the database
+import com.example.Employeedetails.model.Department;
+import com.example.Employeedetails.model.Employee;
+import com.example.Employeedetails.model.IDCard;
+import com.example.Employeedetails.model.Skill;
+import com.example.Employeedetails.repository.DepartmentRepository;
 import com.example.Employeedetails.repository.EmployeeRepository;
-
-import org.springframework.beans.factory.annotation.Autowired; // For automatic dependency injection
-import org.springframework.stereotype.Service;              // Marks this class as a Service layer
+import com.example.Employeedetails.repository.IDCardRepository;
+import com.example.Employeedetails.repository.SkillRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-@Service // 🔹 Marks this class as a Spring Service Component (business logic layer)
-public class EmployeeServiceimpl implements EmployeeServiceInterface {
+@Service
+@Transactional
+public class EmployeeServiceImpl implements EmployeeServiceInterface {
 
-    @Autowired // 🔹 Injects the EmployeeRepository instance automatically (no need to use `new`)
+    @Autowired
     private EmployeeRepository employeeRepository;
 
-    // 🔹 Get All Employees from the database and return as a list of DTOs
+    @Autowired
+    private DepartmentRepository departmentRepository;
+
+    @Autowired
+    private IDCardRepository idCardRepository;
+
+    @Autowired
+    private SkillRepository skillRepository;
+
     @Override
     public List<EmployeeDto> getAll() {
-        List<Employee> employees = employeeRepository.findAll(); // ⏩ Fetches all employee records
-        return employees.stream()                               // ⏩ Converts the list to a stream
-                .map(EmployeeMapper::toDto)                     // ⏩ Maps each Employee → EmployeeDto
-                .collect(Collectors.toList());                  // ⏩ Collects results into a List
+        return employeeRepository.findAll().stream()
+                .map(EmployeeMapper::toDto)
+                .collect(Collectors.toList());
     }
 
-    // 🔹 Get a single employee by ID and return it as DTO
     @Override
     public EmployeeDto getById(Long id) {
         Employee emp = employeeRepository.findById(id)
-                .orElseThrow(() -> new EmployeeNotFoundException("Employee with ID " + id + " not found"));
-        // ⛔ If not found, throws custom exception
-
+                .orElseThrow(() -> new EmployeeNotFoundException("Employee not found"));
         return EmployeeMapper.toDto(emp);
-        // ✅ Converts the entity to DTO before sending back to client
     }
 
-    // 🔹 Create (Insert) a new employee into the database
     @Override
     public EmployeeDto create(EmployeeDto empDto) {
-        Employee emp = EmployeeMapper.toEntity(empDto);       // ✅ Convert DTO → Entity
-        Employee savedEmp = employeeRepository.save(emp);     // 💾 Save the entity to the DB
-        return EmployeeMapper.toDto(savedEmp);                // ✅ Return DTO version of saved record
+        Employee emp = EmployeeMapper.toEntity(empDto);
+
+        // ✅ Handle department
+        Long deptId;
+        if (empDto.getDepartmentId() != null) {
+            deptId = empDto.getDepartmentId();
+        } else if (empDto.getDepartment() != null && empDto.getDepartment().getId() != null) {
+            deptId = empDto.getDepartment().getId();
+        } else {
+            deptId = null;
+        }
+
+        if (deptId != null) {
+            Department department = departmentRepository.findById(deptId)
+                    .orElseThrow(() -> new RuntimeException("Department not found with ID: " + deptId));
+            emp.setDepartment(department);
+        }
+
+        // ✅ Handle ID card
+        if (empDto.getIdCard() != null) {
+            IDCard card = new IDCard();
+            card.setCardNumber(empDto.getIdCard().getCardNumber());
+            card.setIssuedDate(empDto.getIdCard().getIssuedDate());
+            card.setEmployee(emp);
+            emp.setIdCard(card);
+        }
+
+        // ✅ Handle skills
+        if (empDto.getSkills() != null && !empDto.getSkills().isEmpty()) {
+            Set<Skill> skillSet = empDto.getSkills().stream()
+                    .map(skillDto -> skillRepository.findById(skillDto.getId())
+                            .orElseThrow(() -> new RuntimeException("Skill not found with ID: " + skillDto.getId())))
+                    .collect(Collectors.toSet());
+            emp.setSkills(skillSet);
+        }
+
+        Employee savedEmp = employeeRepository.save(emp);
+        return EmployeeMapper.toDto(savedEmp);
     }
 
-    // 🔹 Update existing employee details (name, email, phone)
     @Override
     public EmployeeDto update(Long id, EmployeeDto empDto) {
-        Employee existing = employeeRepository.findById(id)         // 🔍 Find existing record
-                .orElseThrow(() -> new RuntimeException("Employee not found")); // ⛔ Error if not found
+        Employee emp = employeeRepository.findById(id)
+                .orElseThrow(() -> new EmployeeNotFoundException("Employee not found"));
 
-        // ⏬ Update only the allowed fields from DTO to Entity
-        existing.setEmpname(empDto.getEmpname());       // Update name
-        existing.setEmailid(empDto.getEmailid());       // Update email
-        existing.setPhone_no(empDto.getPhone_no());     // Update phone
+        emp.setEmpname(empDto.getEmpname());
+        emp.setEmailid(empDto.getEmailid());
+        emp.setPhone_no(empDto.getPhone_no());
 
-        // ⚠️ Not updating password here for security (optional to include conditionally)
+        // ✅ Update department
+        Long deptId;
+        if (empDto.getDepartmentId() != null) {
+            deptId = empDto.getDepartmentId();
+        } else if (empDto.getDepartment() != null && empDto.getDepartment().getId() != null) {
+            deptId = empDto.getDepartment().getId();
+        } else {
+            deptId = null;
+        }
 
-        Employee updatedEmp = employeeRepository.save(existing);   // 💾 Save updated entity
-        return EmployeeMapper.toDto(updatedEmp);                   // ✅ Return updated DTO
+        if (deptId != null) {
+            Department department = departmentRepository.findById(deptId)
+                    .orElseThrow(() -> new RuntimeException("Department not found with ID: " + deptId));
+            emp.setDepartment(department);
+        }
+
+        // ✅ Update skills
+        if (empDto.getSkills() != null) {
+            Set<Skill> skillSet = empDto.getSkills().stream()
+                    .map(skillDto -> skillRepository.findById(skillDto.getId())
+                            .orElseThrow(() -> new RuntimeException("Skill not found with ID: " + skillDto.getId())))
+                    .collect(Collectors.toSet());
+            emp.setSkills(skillSet);
+        }
+
+        return EmployeeMapper.toDto(employeeRepository.save(emp));
     }
 
-    // 🔹 Delete an employee by ID
     @Override
     public void delete(Long id) {
-        employeeRepository.deleteById(id);   // ❌ Deletes the record if it exists
+        employeeRepository.deleteById(id);
     }
 }
-/*| Keyword/Annotation               | Meaning                                             |
-| -------------------------------- | --------------------------------------------------- |
-| `@Service`                       | Marks this class as a service layer component       |
-| `@Autowired`                     | Automatically injects the required bean             |
-| `employeeRepository`             | Interface that talks to the database                |
-| `Mapper`                         | Converts between DTO and Entity                     |
-| `DTO`                            | Data Transfer Object — only carries data, not logic |
-| `Entity`                         | Java class mapped to a DB table                     |
-| `findById`, `save`               | Built-in Spring Data JPA methods                    |
-| `stream().map(...).collect(...)` | Converts a list of entities into a list of DTOs     |
- */

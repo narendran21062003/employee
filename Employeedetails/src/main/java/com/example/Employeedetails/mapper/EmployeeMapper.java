@@ -1,31 +1,69 @@
 package com.example.Employeedetails.mapper;
 
-import com.example.Employeedetails.Employee;
-import com.example.Employeedetails.dto.EmployeeDto;
+import com.example.Employeedetails.dto.*;
+import com.example.Employeedetails.model.*;
 
-// This is a manual mapper class for converting between Employee Entity and EmployeeDto
+import java.util.Set;
+import java.util.stream.Collectors;
+
 public class EmployeeMapper {
 
-    // 🔄 Convert DTO → Entity
-    public static Employee toEntity(EmployeeDto dto) {
-        Employee emp = new Employee();                        // Create a new Employee entity object
-        emp.setEmpname(dto.getEmpname());                    // Set name from DTO to entity
-        emp.setEmailid(dto.getEmailid());                    // Set email from DTO to entity
-        emp.setPhone_no(dto.getPhone_no());                  // Set phone number from DTO to entity
-        emp.setPassword(dto.getPassword());                  // Set password from DTO to entity
-        return emp;                                          // Return the populated entity object
+    public static EmployeeDto toDto(Employee emp) {
+        if (emp == null) return null;
+
+        EmployeeDto dto = new EmployeeDto();
+        dto.setEmpname(emp.getEmpname());
+        dto.setEmailid(emp.getEmailid());
+        dto.setPhone_no(emp.getPhone_no());
+        dto.setPassword(null); // ✅ Always exclude password from response
+
+        // ✅ Map department information
+        if (emp.getDepartment() != null) {
+            DepartmentDto deptDto = new DepartmentDto();
+            deptDto.setId(emp.getDepartment().getId());
+            deptDto.setName(emp.getDepartment().getName());
+            dto.setDepartment(deptDto);
+        }
+
+        // ✅ Map ID card information (without employee back-reference)
+        if (emp.getIdCard() != null) {
+            IDCardDto cardDto = new IDCardDto();
+            cardDto.setCardNumber(emp.getIdCard().getCardNumber());
+            cardDto.setIssuedDate(emp.getIdCard().getIssuedDate());
+            dto.setIdCard(cardDto);
+        }
+        if (emp.getSkills() != null) {
+            Set<SkillDto> skillDto = emp.getSkills().stream().map(skill -> {
+                SkillDto skilldto = new SkillDto();
+                skilldto.setId(skill.getId());
+                skilldto.setName(skill.getName());
+                return skilldto;
+            }).collect(Collectors.toSet());
+            dto.setSkills(skillDto);
+        }
+
+        return dto;
     }
 
-    // 🔄 Convert Entity → DTO (for response to the client)
-    public static EmployeeDto toDto(Employee emp) {
-        EmployeeDto dto = new EmployeeDto();                 // Create a new DTO object
-        dto.setEmpname(emp.getEmpname());                    // Set name from entity to DTO
-        dto.setEmailid(emp.getEmailid());                    // Set email from entity to DTO
-        dto.setPhone_no(emp.getPhone_no());                  // Set phone number from entity to DTO
+    public static Employee toEntity(EmployeeDto dto) {
+        if (dto == null) return null;
 
-        // ❌ Security Best Practice: Do NOT include password in the response DTO
-        // dto.setPassword(emp.getPassword());               // <-- This line is commented to hide password
+        Employee emp = new Employee();
+        emp.setEmpname(dto.getEmpname());
+        emp.setEmailid(dto.getEmailid());
+        emp.setPhone_no(dto.getPhone_no());
+        emp.setPassword(dto.getPassword());
 
-        return dto;                                          // Return the DTO object (safe to send to client)
+        if (dto.getSkills() != null) {
+            Set<Skill> skills = dto.getSkills().stream().map(skillDto -> {
+                Skill skill = new Skill();
+                skill.setId(skillDto.getId());
+                return skill;
+            }).collect(Collectors.toSet());
+            emp.setSkills(skills);
+        }
+
+
+        return emp;
     }
 }

@@ -2,6 +2,8 @@ package com.example.Employeedetails.dto;
 import lombok.Data;
 import jakarta.validation.constraints.*;
 
+import java.util.Set;
+
 @Data  // Lombok: Automatically generates getters, setters, toString, equals, and hashCode methods
 public class EmployeeDto {
 
@@ -26,14 +28,13 @@ public class EmployeeDto {
     @NotBlank(message = "Password is required")
     // Ensures password is not null or empty
     private String password;
+
+    private IDCardDto idCard;
+
+    private DepartmentDto department;
+
+    // ✅ ADD: Accept departmentId for easier API usage
+    private Long departmentId;
+
+    private Set<SkillDto> skills;
 }
-/*
--------------------------------------------------------------------------
-| Field      | Annotation Used             | Purpose                                                |
-| ---------- | --------------------------- | ------------------------------------------------------ |
-| empname    | @NotBlank                   | Ensures the name is not null or just spaces            |
-| emailid    | @Email, @NotBlank           | Ensures proper email format and not empty              |
-| phone_no   | @Pattern, @NotBlank         | Validates exactly 10 numeric digits, not null or empty |
-| password   | @Size(min=6), @NotBlank     | Ensures at least 6 characters and not blank            |
--------------------------------------------------------------------------
-*/
