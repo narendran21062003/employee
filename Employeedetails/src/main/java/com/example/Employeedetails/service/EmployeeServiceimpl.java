@@ -5,11 +5,9 @@ import com.example.Employeedetails.exception.EmployeeNotFoundException;
 import com.example.Employeedetails.mapper.EmployeeMapper;
 import com.example.Employeedetails.model.Department;
 import com.example.Employeedetails.model.Employee;
-import com.example.Employeedetails.model.IDCard;
 import com.example.Employeedetails.model.Skill;
 import com.example.Employeedetails.repository.DepartmentRepository;
 import com.example.Employeedetails.repository.EmployeeRepository;
-import com.example.Employeedetails.repository.IDCardRepository;
 import com.example.Employeedetails.repository.SkillRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,8 +27,6 @@ public class EmployeeServiceImpl implements EmployeeServiceInterface {
     @Autowired
     private DepartmentRepository departmentRepository;
 
-    @Autowired
-    private IDCardRepository idCardRepository;
 
     @Autowired
     private SkillRepository skillRepository;
@@ -70,13 +66,7 @@ public class EmployeeServiceImpl implements EmployeeServiceInterface {
         }
 
         // ✅ Handle ID card
-        if (empDto.getIdCard() != null) {
-            IDCard card = new IDCard();
-            card.setCardNumber(empDto.getIdCard().getCardNumber());
-            card.setIssuedDate(empDto.getIdCard().getIssuedDate());
-            card.setEmployee(emp);
-            emp.setIdCard(card);
-        }
+
 
         // ✅ Handle skills
         if (empDto.getSkills() != null && !empDto.getSkills().isEmpty()) {

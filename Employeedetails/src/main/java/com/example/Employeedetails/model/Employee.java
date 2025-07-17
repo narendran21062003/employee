@@ -34,9 +34,9 @@ public class Employee {
     @JoinColumn(name = "department_id")
     private Department department;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "card_id", referencedColumnName = "id")
-    private IDCard idCard;
+    @Column(name = "department_id", insertable = false, updatable = false)
+    private Long departmentId;
+
 
     @ManyToMany
     @JoinTable(

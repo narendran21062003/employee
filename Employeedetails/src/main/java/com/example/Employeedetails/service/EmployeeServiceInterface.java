@@ -5,8 +5,9 @@ import java.util.List;
 
 public interface EmployeeServiceInterface {
     List<EmployeeDto> getAll();
-    EmployeeDto getById(Long id);
     EmployeeDto create(EmployeeDto empDto);
     EmployeeDto update(Long id, EmployeeDto empDto);
     void delete(Long id);
+
+    EmployeeDto getById(Long id);
 }

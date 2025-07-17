@@ -29,7 +29,7 @@ public class EmployeeDto {
     // Ensures password is not null or empty
     private String password;
 
-    private IDCardDto idCard;
+
 
     private DepartmentDto department;
 

@@ -26,12 +26,7 @@ public class EmployeeMapper {
         }
 
         // ✅ Map ID card information (without employee back-reference)
-        if (emp.getIdCard() != null) {
-            IDCardDto cardDto = new IDCardDto();
-            cardDto.setCardNumber(emp.getIdCard().getCardNumber());
-            cardDto.setIssuedDate(emp.getIdCard().getIssuedDate());
-            dto.setIdCard(cardDto);
-        }
+
         if (emp.getSkills() != null) {
             Set<SkillDto> skillDto = emp.getSkills().stream().map(skill -> {
                 SkillDto skilldto = new SkillDto();
