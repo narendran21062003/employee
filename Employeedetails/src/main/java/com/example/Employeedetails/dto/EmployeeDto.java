@@ -37,4 +37,7 @@ public class EmployeeDto {
     private Long departmentId;
 
     private Set<SkillDto> skills;
+
+    private RoleDto role;
+
 }

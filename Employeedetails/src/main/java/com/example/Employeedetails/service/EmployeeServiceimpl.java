@@ -1,14 +1,9 @@
 package com.example.Employeedetails.service;
 
-import com.example.Employeedetails.dto.EmployeeDto;
+import com.example.Employeedetails.dto.*;
 import com.example.Employeedetails.exception.EmployeeNotFoundException;
-import com.example.Employeedetails.mapper.EmployeeMapper;
-import com.example.Employeedetails.model.Department;
-import com.example.Employeedetails.model.Employee;
-import com.example.Employeedetails.model.Skill;
-import com.example.Employeedetails.repository.DepartmentRepository;
-import com.example.Employeedetails.repository.EmployeeRepository;
-import com.example.Employeedetails.repository.SkillRepository;
+import com.example.Employeedetails.model.*;
+import com.example.Employeedetails.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,18 +18,15 @@ public class EmployeeServiceImpl implements EmployeeServiceInterface {
 
     @Autowired
     private EmployeeRepository employeeRepository;
-
     @Autowired
     private DepartmentRepository departmentRepository;
-
-
     @Autowired
     private SkillRepository skillRepository;
 
     @Override
     public List<EmployeeDto> getAll() {
         return employeeRepository.findAll().stream()
-                .map(EmployeeMapper::toDto)
+                .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
 
@@ -42,43 +34,33 @@ public class EmployeeServiceImpl implements EmployeeServiceInterface {
     public EmployeeDto getById(Long id) {
         Employee emp = employeeRepository.findById(id)
                 .orElseThrow(() -> new EmployeeNotFoundException("Employee not found"));
-        return EmployeeMapper.toDto(emp);
+        return convertToDto(emp);
     }
 
     @Override
     public EmployeeDto create(EmployeeDto empDto) {
-        Employee emp = EmployeeMapper.toEntity(empDto);
+        Employee emp = new Employee();
+        emp.setEmpname(empDto.getEmpname());
+        emp.setEmailid(empDto.getEmailid());
+        emp.setPhone_no(empDto.getPhone_no());
+        emp.setPassword(empDto.getPassword());
 
-        // ✅ Handle department
-        Long deptId;
         if (empDto.getDepartmentId() != null) {
-            deptId = empDto.getDepartmentId();
-        } else if (empDto.getDepartment() != null && empDto.getDepartment().getId() != null) {
-            deptId = empDto.getDepartment().getId();
-        } else {
-            deptId = null;
-        }
-
-        if (deptId != null) {
-            Department department = departmentRepository.findById(deptId)
-                    .orElseThrow(() -> new RuntimeException("Department not found with ID: " + deptId));
+            Department department = departmentRepository.findById(empDto.getDepartmentId())
+                    .orElseThrow(() -> new RuntimeException("Department not found"));
             emp.setDepartment(department);
         }
 
-        // ✅ Handle ID card
-
-
-        // ✅ Handle skills
-        if (empDto.getSkills() != null && !empDto.getSkills().isEmpty()) {
-            Set<Skill> skillSet = empDto.getSkills().stream()
+        if (empDto.getSkills() != null) {
+            Set<Skill> skills = empDto.getSkills().stream()
                     .map(skillDto -> skillRepository.findById(skillDto.getId())
-                            .orElseThrow(() -> new RuntimeException("Skill not found with ID: " + skillDto.getId())))
+                            .orElseThrow(() -> new RuntimeException("Skill not found")))
                     .collect(Collectors.toSet());
-            emp.setSkills(skillSet);
+            emp.setSkills(skills);
         }
 
         Employee savedEmp = employeeRepository.save(emp);
-        return EmployeeMapper.toDto(savedEmp);
+        return convertToDto(savedEmp);
     }
 
     @Override
@@ -90,36 +72,55 @@ public class EmployeeServiceImpl implements EmployeeServiceInterface {
         emp.setEmailid(empDto.getEmailid());
         emp.setPhone_no(empDto.getPhone_no());
 
-        // ✅ Update department
-        Long deptId;
         if (empDto.getDepartmentId() != null) {
-            deptId = empDto.getDepartmentId();
-        } else if (empDto.getDepartment() != null && empDto.getDepartment().getId() != null) {
-            deptId = empDto.getDepartment().getId();
-        } else {
-            deptId = null;
-        }
-
-        if (deptId != null) {
-            Department department = departmentRepository.findById(deptId)
-                    .orElseThrow(() -> new RuntimeException("Department not found with ID: " + deptId));
+            Department department = departmentRepository.findById(empDto.getDepartmentId())
+                    .orElseThrow(() -> new RuntimeException("Department not found"));
             emp.setDepartment(department);
         }
 
-        // ✅ Update skills
         if (empDto.getSkills() != null) {
-            Set<Skill> skillSet = empDto.getSkills().stream()
+            Set<Skill> skills = empDto.getSkills().stream()
                     .map(skillDto -> skillRepository.findById(skillDto.getId())
-                            .orElseThrow(() -> new RuntimeException("Skill not found with ID: " + skillDto.getId())))
+                            .orElseThrow(() -> new RuntimeException("Skill not found")))
                     .collect(Collectors.toSet());
-            emp.setSkills(skillSet);
+            emp.setSkills(skills);
         }
 
-        return EmployeeMapper.toDto(employeeRepository.save(emp));
+        return convertToDto(employeeRepository.save(emp));
     }
 
     @Override
     public void delete(Long id) {
         employeeRepository.deleteById(id);
+    }
+
+    private EmployeeDto convertToDto(Employee emp) {
+        EmployeeDto dto = new EmployeeDto();
+        dto.setEmpname(emp.getEmpname());
+        dto.setEmailid(emp.getEmailid());
+        dto.setPhone_no(emp.getPhone_no());
+        dto.setPassword(null); // Never return password
+
+        if (emp.getDepartment() != null) {
+            DepartmentDto deptDto = new DepartmentDto();
+            deptDto.setId(emp.getDepartment().getId());
+            deptDto.setName(emp.getDepartment().getName());
+            dto.setDepartment(deptDto);
+            dto.setDepartmentId(emp.getDepartment().getId());
+        }
+
+        if (emp.getSkills() != null) {
+            Set<SkillDto> skillDtos = emp.getSkills().stream()
+                    .map(skill -> {
+                        SkillDto skillDto = new SkillDto();
+                        skillDto.setId(skill.getId());
+                        skillDto.setName(skill.getName());
+                        return skillDto;
+                    })
+                    .collect(Collectors.toSet());
+            dto.setSkills(skillDtos);
+        }
+
+        return dto;
     }
 }

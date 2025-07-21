@@ -1,9 +1,9 @@
 package com.example.Employeedetails.controller;
 
 import com.example.Employeedetails.dto.DepartmentDto;
-import com.example.Employeedetails.mapper.DepartmentMapper;
 import com.example.Employeedetails.model.Department;
 import com.example.Employeedetails.service.DepartmentServiceInterface;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,9 +16,11 @@ public class DepartmentController {
     @Autowired
     private DepartmentServiceInterface departmentService;
 
-    // ✅ Create a new department
+    // ✅ Create a new department (simplified content type)
     @PostMapping("/add")
-    public Department createDepartment(@RequestBody Department department) {
+    public Department createDepartment(@Valid @RequestBody DepartmentDto departmentDto) {
+        Department department = new Department();
+        department.setName(departmentDto.getName());
         return departmentService.createDepartment(department);
     }
 
@@ -29,16 +31,18 @@ public class DepartmentController {
     }
 
     // ✅ Get department with employees
+    // DepartmentController.java
     @GetMapping("/{id}/employees")
     public DepartmentDto getDepartmentWithEmployees(@PathVariable Long id) {
-        Department dept = departmentService.getById(id);
-        return DepartmentMapper.toDtoWithEmployees(dept);
+        return departmentService.getDepartmentWithEmployees(id);
     }
 
-    // ✅ Update a department by ID (Fixed URL mapping)
+    // ✅ Update a department by ID
     @PutMapping("/{id}")
-    public Department updateDepartment(@PathVariable Long id, @RequestBody Department updatedDept) {
-        return departmentService.updateDepartment(id, updatedDept);
+    public Department updateDepartment(@PathVariable Long id, @Valid @RequestBody DepartmentDto updatedDeptDto) {
+        Department department = new Department();
+        department.setName(updatedDeptDto.getName());
+        return departmentService.updateDepartment(id, department);
     }
 
     // ✅ Delete a department by ID

@@ -1,13 +1,12 @@
 package com.example.Employeedetails.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.HashSet;
 import java.util.Set;
-
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
 @Getter
@@ -37,13 +36,17 @@ public class Employee {
     @Column(name = "department_id", insertable = false, updatable = false)
     private Long departmentId;
 
-
     @ManyToMany
     @JoinTable(
             name = "employee_skills",
             joinColumns = @JoinColumn(name = "employee_id"),
             inverseJoinColumns = @JoinColumn(name = "skill_id")
     )
-    @JsonManagedReference // ✅ Prevent infinite loop by managing the forward link
+    @JsonManagedReference
     private Set<Skill> skills = new HashSet<>();
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "role_id", referencedColumnName = "id")
+    @JsonManagedReference
+    private Role role;
 }

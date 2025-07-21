@@ -1,6 +1,7 @@
 package com.example.Employeedetails.controller;
 
 import com.example.Employeedetails.dto.EmployeeDto;
+import com.example.Employeedetails.dto.RoleDto;
 import com.example.Employeedetails.service.EmployeeServiceInterface;
 import jakarta.validation.Valid; // ✅ Enables validation of incoming DTOs
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,37 +9,38 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RestController // ✅ Makes this class handle HTTP requests like GET, POST, etc.
-@RequestMapping("/api/employees") // ✅ Base URL path for this controller
+@RestController
+@RequestMapping("/api/employees")
 public class EmployeeController {
 
-    @Autowired // ✅ Injects the service layer into the controller
+    @Autowired
     private EmployeeServiceInterface employeeService;
 
-    // 🔹 Get all employees (GET /api/employees/all)
-    @GetMapping("/all")
+    // Get all employees
+    @GetMapping
     public List<EmployeeDto> getAllEmployees() {
-        return employeeService.getAll(); // ✅ Service returns List<EmployeeDto>
+        return employeeService.getAll();
     }
 
-    // 🔹 Get a single employee by ID (GET /api/employees/{id})
-    @GetMapping("/{id}")
-    public EmployeeDto getEmployeeById(@PathVariable Long id) {
-        return employeeService.getById(id); // ✅ Returns DTO (password excluded)
-    }
-
-    // 🔹 Add a new employee (POST /api/employees/add)
-    @PostMapping("/add")
+    // Create new employee
+    @PostMapping
     public EmployeeDto createEmployee(@Valid @RequestBody EmployeeDto empDto) {
-        // ✅ @Valid triggers validation based on annotations in EmployeeDto
-        return employeeService.create(empDto); // ✅ Clean creation with mapped entity
+        return employeeService.create(empDto);
     }
+
+    // Other existing methods...
+
 
     // 🔹 Update an existing employee (PUT /api/employees/{id})
     @PutMapping("/{id}")
     public EmployeeDto updateEmployee(@PathVariable Long id, @Valid @RequestBody EmployeeDto updatedEmpDto) {
         // ✅ Only name, email, phone are updated (password skipped for now)
         return employeeService.update(id, updatedEmpDto);
+    }
+    @GetMapping("/{id}/role")
+    public RoleDto getEmployeeRole(@PathVariable Long id) {
+        EmployeeDto emp = employeeService.getById(id);
+        return emp.getRole();
     }
 
     // 🔹 Delete an employee (DELETE /api/employees/{id})

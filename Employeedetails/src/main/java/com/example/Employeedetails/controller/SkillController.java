@@ -2,6 +2,7 @@ package com.example.Employeedetails.controller;
 
 import com.example.Employeedetails.dto.SkillDto;
 import com.example.Employeedetails.service.SkillService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,7 +17,7 @@ public class SkillController {
 
     // 🔹 Add a new skill (POST)
     @PostMapping("/add")
-    public SkillDto addSkill(@RequestBody SkillDto skillDto) {
+    public SkillDto addSkill(@Valid @RequestBody SkillDto skillDto) {
         return skillService.addSkill(skillDto);
     }
 
