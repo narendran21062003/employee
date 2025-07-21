@@ -1,10 +1,13 @@
 package com.example.Employeedetails.dto;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import jakarta.validation.constraints.*;
 
 import java.util.Set;
 
-@Data  // Lombok: Automatically generates getters, setters, toString, equals, and hashCode methods
+
+@Data// Lombok: Automatically generates getters, setters, toString, equals, and hashCode methods
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class EmployeeDto {
 
     @NotBlank(message = "Employee name is required")

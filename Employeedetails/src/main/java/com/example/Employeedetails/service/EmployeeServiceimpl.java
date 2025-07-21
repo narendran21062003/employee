@@ -22,6 +22,8 @@ public class EmployeeServiceImpl implements EmployeeServiceInterface {
     private DepartmentRepository departmentRepository;
     @Autowired
     private SkillRepository skillRepository;
+    @Autowired
+    private RoleRepository roleRepository;
 
     @Override
     public List<EmployeeDto> getAll() {
@@ -58,6 +60,12 @@ public class EmployeeServiceImpl implements EmployeeServiceInterface {
                     .collect(Collectors.toSet());
             emp.setSkills(skills);
         }
+        if (empDto.getRole() != null && empDto.getRole().getId() != null) {
+            Role role = roleRepository.findById(empDto.getRole().getId())
+                    .orElseThrow(() -> new RuntimeException("Role not found"));
+            emp.setRole(role);
+        }
+
 
         Employee savedEmp = employeeRepository.save(emp);
         return convertToDto(savedEmp);
@@ -85,6 +93,12 @@ public class EmployeeServiceImpl implements EmployeeServiceInterface {
                     .collect(Collectors.toSet());
             emp.setSkills(skills);
         }
+        if (empDto.getRole() != null && empDto.getRole().getId() != null) {
+            Role role = roleRepository.findById(empDto.getRole().getId())
+                    .orElseThrow(() -> new RuntimeException("Role not found"));
+            emp.setRole(role);
+        }
+
 
         return convertToDto(employeeRepository.save(emp));
     }
@@ -120,6 +134,13 @@ public class EmployeeServiceImpl implements EmployeeServiceInterface {
                     .collect(Collectors.toSet());
             dto.setSkills(skillDtos);
         }
+        if (emp.getRole() != null) {
+            RoleDto roleDto = new RoleDto();
+            roleDto.setId(emp.getRole().getId());
+            roleDto.setRolename(emp.getRole().getRolename());
+            dto.setRole(roleDto);
+        }
+
 
         return dto;
     }

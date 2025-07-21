@@ -1,6 +1,7 @@
 package com.example.Employeedetails.controller;
 
 import com.example.Employeedetails.dto.SkillDto;
+import com.example.Employeedetails.dto.SkillWithEmployeesDto;
 import com.example.Employeedetails.service.SkillService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,11 @@ public class SkillController {
     @GetMapping("/{id}")
     public SkillDto getSkillById(@PathVariable Long id) {
         return skillService.getSkillById(id);
+    }
+
+    @GetMapping("/{id}/employees")
+    public SkillWithEmployeesDto getSkillWithEmployees(@PathVariable Long id) {
+        return skillService.getSkillWithEmployees(id);
     }
 
     // 🔹 Delete a skill by ID (DELETE)

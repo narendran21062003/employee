@@ -1,6 +1,8 @@
 package com.example.Employeedetails.service;
 
+import com.example.Employeedetails.dto.EmployeeBasicDto;
 import com.example.Employeedetails.dto.SkillDto;
+import com.example.Employeedetails.dto.SkillWithEmployeesDto;
 import com.example.Employeedetails.exception.SkillNotFoundException;
 import com.example.Employeedetails.model.Skill;
 import com.example.Employeedetails.repository.SkillRepository;
@@ -36,6 +38,28 @@ public class SkillServiceImpl implements SkillService {
                 .orElseThrow(() -> new SkillNotFoundException("Skill not found"));
         return convertToDto(skill);
     }
+    @Override
+    public SkillWithEmployeesDto getSkillWithEmployees(Long id) {
+        Skill skill = skillRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Skill not found"));
+
+        SkillWithEmployeesDto dto = new SkillWithEmployeesDto();
+        dto.setId(skill.getId());
+        dto.setName(skill.getName());
+
+        List<EmployeeBasicDto> employees = skill.getEmployees().stream()
+                .map(emp -> {
+                    EmployeeBasicDto basicDto = new EmployeeBasicDto();
+                    basicDto.setEmpname(emp.getEmpname());
+                    basicDto.setEmailid(emp.getEmailid());
+                    basicDto.setPhone_no(emp.getPhone_no());
+                    return basicDto;
+                }).toList();
+
+        dto.setEmployees(employees);
+        return dto;
+    }
+
 
     @Override
     public void deleteSkill(Long id) {
