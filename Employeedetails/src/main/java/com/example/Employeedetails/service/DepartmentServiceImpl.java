@@ -44,7 +44,16 @@ public class DepartmentServiceImpl implements DepartmentServiceInterface {
 
     @Override
     public void deleteDepartment(Long id) {
-        departmentRepository.deleteById(id);
+        Department department = departmentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Department not found"));
+
+        if (department.getEmployees() != null && !department.getEmployees().isEmpty()) {
+            for (Employee employee : department.getEmployees()) {
+                employee.setDepartment(null); // ❌ remove reference to department
+            }
+        }
+
+        departmentRepository.delete(department);
     }
 
     @Override

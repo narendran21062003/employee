@@ -16,6 +16,6 @@ public class Department {
     private String name; // ✅ Department name (must be unique)
 
     // ✅ One Department → Many Employees
-    @OneToMany(mappedBy = "department", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "department", orphanRemoval = false)
     private List<Employee> employees;
 }

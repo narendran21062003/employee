@@ -33,7 +33,7 @@ public class Employee {
     @JoinColumn(name = "department_id")
     private Department department;
 
-    @Column(name = "department_id", insertable = false, updatable = false)
+    @Column(name = "department_id", insertable = false, updatable = false,nullable = true)
     private Long departmentId;
 
     @ManyToMany
