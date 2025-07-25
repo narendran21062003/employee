@@ -1,10 +1,10 @@
 package com.example.Employeedetails.security;
 
 import io.jsonwebtoken.*;
-import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
@@ -24,14 +24,21 @@ public class JwtTokenProvider {
     private long refreshTokenExpiration;
 
     public String generateAccessToken(Authentication authentication) {
-        String username = authentication.getName();
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        String username = userDetails.getUsername();
+
+        // Get employee ID from custom UserDetails implementation
+        Long employeeId = null;
+        if (userDetails instanceof UserDetailsImpl) {
+            employeeId = ((UserDetailsImpl) userDetails).getEmployeeId();
+        }
 
         Date currentDate = new Date();
         Date expireDate = new Date(currentDate.getTime() + accessTokenExpiration);
 
         return Jwts.builder()
                 .setSubject(username)
-
+                .claim("empId", employeeId)  // Include employee ID as a custom claim
                 .setIssuedAt(currentDate)
                 .setExpiration(expireDate)
                 .signWith(key())
@@ -52,7 +59,6 @@ public class JwtTokenProvider {
     }
 
     private Key key() {
-        // Remove Base64 decoding since we're now using raw secret
         return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
 
@@ -63,6 +69,15 @@ public class JwtTokenProvider {
                 .parseClaimsJws(token)
                 .getBody();
         return claims.getSubject();
+    }
+
+    public Long getEmployeeIdFromToken(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(key())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        return claims.get("empId", Long.class);
     }
 
     public boolean validateToken(String token) {
@@ -80,6 +95,8 @@ public class JwtTokenProvider {
             throw new RuntimeException("Unsupported JWT token");
         } catch (IllegalArgumentException ex) {
             throw new RuntimeException("JWT claims string is empty");
+        } catch (Exception ex) {
+            throw new RuntimeException("JWT validation failed");
         }
     }
 }

@@ -7,8 +7,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
@@ -23,9 +21,14 @@ public class CustomUserDetailsService implements UserDetailsService {
         Employee employee = employeeRepository.findByEmailid(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
 
-        return new org.springframework.security.core.userdetails.User(
-                employee.getEmailid(),
-                employee.getPassword(),
-                Collections.emptyList());
+        // Use the simplified build method
+        return UserDetailsImpl.build(employee);
+
+        // Alternatively, you could use:
+        // return new UserDetailsImpl(
+        //        employee.getEmailid(),
+        //        employee.getPassword(),
+        //        employee.getId()
+        // );
     }
 }
