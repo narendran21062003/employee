@@ -36,7 +36,7 @@ public class RoleController {
         EmployeeDto dto = new EmployeeDto();
         dto.setEmpname(employee.getEmpname());  // Changed to match DTO field name
         dto.setEmailid(employee.getEmailid());
-        dto.setPhone_no(employee.getPhone_no());
+        dto.setPhone_no(employee.getPhoneNo());
         dto.setPassword(employee.getPassword()); // Note: Consider security implications
         // Set other fields as needed
         return dto;

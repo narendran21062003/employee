@@ -69,7 +69,7 @@ public class DepartmentServiceImpl implements DepartmentServiceInterface {
                         EmployeeBasicDto basicDto = new EmployeeBasicDto();
                         basicDto.setEmpname(emp.getEmpname());
                         basicDto.setEmailid(emp.getEmailid());
-                        basicDto.setPhone_no(emp.getPhone_no());
+                        basicDto.setPhone_no(emp.getPhoneNo());
                         return basicDto;
                     })
                     .collect(Collectors.toList());

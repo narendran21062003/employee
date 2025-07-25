@@ -44,7 +44,7 @@ public class EmployeeServiceImpl implements EmployeeServiceInterface {
         Employee emp = new Employee();
         emp.setEmpname(empDto.getEmpname());
         emp.setEmailid(empDto.getEmailid());
-        emp.setPhone_no(empDto.getPhone_no());
+        emp.setPhoneNo(empDto.getPhone_no());
         emp.setPassword(empDto.getPassword());
 
         if (empDto.getDepartmentId() != null) {
@@ -78,7 +78,7 @@ public class EmployeeServiceImpl implements EmployeeServiceInterface {
 
         emp.setEmpname(empDto.getEmpname());
         emp.setEmailid(empDto.getEmailid());
-        emp.setPhone_no(empDto.getPhone_no());
+        emp.setPhoneNo(empDto.getPhone_no());
 
         if (empDto.getDepartmentId() != null) {
             Department department = departmentRepository.findById(empDto.getDepartmentId())
@@ -112,7 +112,7 @@ public class EmployeeServiceImpl implements EmployeeServiceInterface {
         EmployeeDto dto = new EmployeeDto();
         dto.setEmpname(emp.getEmpname());
         dto.setEmailid(emp.getEmailid());
-        dto.setPhone_no(emp.getPhone_no());
+        dto.setPhone_no(emp.getPhoneNo());
         dto.setPassword(null); // Never return password
 
         if (emp.getDepartment() != null) {

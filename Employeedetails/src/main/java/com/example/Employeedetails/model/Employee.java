@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -15,7 +16,7 @@ public class Employee {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
     @Column(nullable = false)
     private String empname;
@@ -24,7 +25,16 @@ public class Employee {
     private String emailid;
 
     @Column(nullable = false, unique = true)
-    private String phone_no;
+    private String phoneNo; // Changed from phone_no to phoneNo
+
+    // Update getter and setter names to match:
+    public String getPhoneNo() {
+        return phoneNo;
+    }
+
+    public void setPhoneNo(String phoneNo) {
+        this.phoneNo = phoneNo;
+    }
 
     @Column(nullable = false)
     private String password;
@@ -33,7 +43,7 @@ public class Employee {
     @JoinColumn(name = "department_id")
     private Department department;
 
-    @Column(name = "department_id", insertable = false, updatable = false,nullable = true)
+    @Column(name = "department_id", insertable = false, updatable = false)
     private Long departmentId;
 
     @ManyToMany
@@ -49,4 +59,12 @@ public class Employee {
     @JoinColumn(name = "role_id", referencedColumnName = "id")
     @JsonManagedReference
     private Role role;
+
+    @PrePersist
+    @PreUpdate
+    public void hashPassword() {
+        if (this.password != null && !this.password.startsWith("$2a$")) {
+            this.password = new BCryptPasswordEncoder().encode(this.password);
+        }
+    }
 }

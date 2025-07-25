@@ -52,7 +52,7 @@ public class SkillServiceImpl implements SkillService {
                     EmployeeBasicDto basicDto = new EmployeeBasicDto();
                     basicDto.setEmpname(emp.getEmpname());
                     basicDto.setEmailid(emp.getEmailid());
-                    basicDto.setPhone_no(emp.getPhone_no());
+                    basicDto.setPhone_no(emp.getPhoneNo());
                     return basicDto;
                 }).toList();
 
